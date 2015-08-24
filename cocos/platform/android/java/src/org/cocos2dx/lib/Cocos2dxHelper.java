@@ -32,6 +32,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
+import android.hardware.Sensor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
@@ -44,7 +45,9 @@ import android.view.WindowManager;
 import com.chukong.cocosplay.client.CocosPlayClient;
 import com.enhance.gameservice.IGameTuningService;
 
+import java.lang.Runnable;
 import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -66,6 +69,9 @@ public class Cocos2dxHelper {
     private static AssetManager sAssetManager;
     private static Cocos2dxAccelerometer sCocos2dxAccelerometer;
     private static boolean sAccelerometerEnabled;
+    private static Cocos2dxMotionSensor sCocos2dxMotionSensor;
+    private static HashSet<Integer> sEnabledMotionSensorTypeSet =
+      new HashSet<Integer>();
     private static boolean sActivityVisible;
     private static String sPackageName;
     private static String sFileDirectory;
@@ -92,7 +98,7 @@ public class Cocos2dxHelper {
         Cocos2dxHelper.sCocos2dxHelperListener = (Cocos2dxHelperListener)activity;
         if (!sInited) {
             final ApplicationInfo applicationInfo = activity.getApplicationInfo();
-                    
+
             Cocos2dxHelper.sPackageName = applicationInfo.packageName;
             if (CocosPlayClient.isEnabled() && !CocosPlayClient.isDemo()) {
                 Cocos2dxHelper.sFileDirectory = CocosPlayClient.getGameRoot();
@@ -100,21 +106,22 @@ public class Cocos2dxHelper {
             else {
                 Cocos2dxHelper.sFileDirectory = activity.getFilesDir().getAbsolutePath();
             }
-            
+
             Cocos2dxHelper.nativeSetApkPath(applicationInfo.sourceDir);
-    
+
             Cocos2dxHelper.sCocos2dxAccelerometer = new Cocos2dxAccelerometer(activity);
+            Cocos2dxHelper.sCocos2dxMotionSensor = new Cocos2dxMotionSensor(activity);
             Cocos2dxHelper.sCocos2dMusic = new Cocos2dxMusic(activity);
             Cocos2dxHelper.sCocos2dSound = new Cocos2dxSound(activity);
             Cocos2dxHelper.sAssetManager = activity.getAssets();
             Cocos2dxHelper.nativeSetContext((Context)activity, Cocos2dxHelper.sAssetManager);
-    
+
             Cocos2dxBitmap.setContext(activity);
 
             Cocos2dxHelper.sVibrateService = (Vibrator)activity.getSystemService(Context.VIBRATOR_SERVICE);
 
             sInited = true;
-            
+
             //Enhance API modification begin
             Intent serviceIntent = new Intent(IGameTuningService.class.getName());
             serviceIntent.setPackage("com.enhance.gameservice");
@@ -122,7 +129,7 @@ public class Cocos2dxHelper {
             //Enhance API modification end
         }
     }
-    
+
     //Enhance API modification begin
     private static ServiceConnection connection = new ServiceConnection() {
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -135,19 +142,19 @@ public class Cocos2dxHelper {
         }
     };
     //Enhance API modification end
-    
+
     public static Activity getActivity() {
         return sActivity;
     }
-    
+
     public static void addOnActivityResultListener(OnActivityResultListener listener) {
         onActivityResultListeners.add(listener);
     }
-    
+
     public static Set<OnActivityResultListener> getOnActivityResultListeners() {
         return onActivityResultListeners;
     }
-    
+
     public static boolean isActivityVisible(){
         return sActivityVisible;
     }
@@ -180,7 +187,7 @@ public class Cocos2dxHelper {
     public static String getCurrentLanguage() {
         return Locale.getDefault().getLanguage();
     }
-    
+
     public static String getDeviceModel(){
         return Build.MODEL;
     }
@@ -194,7 +201,6 @@ public class Cocos2dxHelper {
         Cocos2dxHelper.sCocos2dxAccelerometer.enable();
     }
 
-
     public static void setAccelerometerInterval(float interval) {
         Cocos2dxHelper.sCocos2dxAccelerometer.setInterval(interval);
     }
@@ -202,6 +208,22 @@ public class Cocos2dxHelper {
     public static void disableAccelerometer() {
         Cocos2dxHelper.sAccelerometerEnabled = false;
         Cocos2dxHelper.sCocos2dxAccelerometer.disable();
+    }
+
+    public static void enableMotionSensor(int ccSensorType) {
+        Cocos2dxHelper.sEnabledMotionSensorTypeSet.add(ccSensorType);
+        Cocos2dxHelper.sCocos2dxMotionSensor.enable(ccSensorType);
+    }
+
+    public static void setMotionSensorInterval(int ccSensorType,
+                                               float interval) {
+        Cocos2dxHelper.sCocos2dxMotionSensor.setInterval(ccSensorType,
+                                                         interval);
+    }
+
+    public static void disableMotionSensor(int ccSensorType) {
+        Cocos2dxHelper.sEnabledMotionSensorTypeSet.remove(ccSensorType);
+        Cocos2dxHelper.sCocos2dxMotionSensor.disable(ccSensorType);
     }
 
     public static void setKeepScreenOn(boolean value) {
@@ -212,7 +234,7 @@ public class Cocos2dxHelper {
         sVibrateService.vibrate((long)(duration * 1000));
     }
 
-    public static boolean openURL(String url) { 
+    public static boolean openURL(String url) {
         boolean ret = false;
         try {
             Intent i = new Intent(Intent.ACTION_VIEW);
@@ -314,6 +336,9 @@ public class Cocos2dxHelper {
         if (Cocos2dxHelper.sAccelerometerEnabled) {
             Cocos2dxHelper.sCocos2dxAccelerometer.enable();
         }
+        for (Integer type : sEnabledMotionSensorTypeSet) {
+            Cocos2dxHelper.sCocos2dxMotionSensor.enable(type);
+        }
     }
 
     public static void onPause() {
@@ -321,18 +346,21 @@ public class Cocos2dxHelper {
         if (Cocos2dxHelper.sAccelerometerEnabled) {
             Cocos2dxHelper.sCocos2dxAccelerometer.disable();
         }
+        for (Integer type : sEnabledMotionSensorTypeSet) {
+            Cocos2dxHelper.sCocos2dxMotionSensor.disable(type);
+        }
     }
 
     public static void onEnterBackground() {
         sCocos2dSound.onEnterBackground();
         sCocos2dMusic.onEnterBackground();
     }
-    
+
     public static void onEnterForeground() {
         sCocos2dSound.onEnterForeground();
         sCocos2dMusic.onEnterForeground();
     }
-    
+
     public static void terminateProcess() {
         android.os.Process.killProcess(android.os.Process.myPid());
     }
@@ -375,11 +403,11 @@ public class Cocos2dxHelper {
         }
         return -1;
     }
-    
+
     // ===========================================================
     // Functions for CCUserDefault
     // ===========================================================
-    
+
     public static boolean getBoolForKey(String key, boolean defaultValue) {
         SharedPreferences settings = sActivity.getSharedPreferences(Cocos2dxHelper.PREFS_NAME, 0);
         try {
@@ -408,7 +436,7 @@ public class Cocos2dxHelper {
 
         return false;
     }
-    
+
     public static int getIntegerForKey(String key, int defaultValue) {
         SharedPreferences settings = sActivity.getSharedPreferences(Cocos2dxHelper.PREFS_NAME, 0);
         try {
@@ -436,7 +464,7 @@ public class Cocos2dxHelper {
 
         return 0;
     }
-    
+
     public static float getFloatForKey(String key, float defaultValue) {
         SharedPreferences settings = sActivity.getSharedPreferences(Cocos2dxHelper.PREFS_NAME, 0);
         try {
@@ -464,12 +492,12 @@ public class Cocos2dxHelper {
 
         return 0.0f;
     }
-    
+
     public static double getDoubleForKey(String key, double defaultValue) {
         // SharedPreferences doesn't support saving double value
         return getFloatForKey(key, (float) defaultValue);
     }
-    
+
     public static String getStringForKey(String key, String defaultValue) {
         SharedPreferences settings = sActivity.getSharedPreferences(Cocos2dxHelper.PREFS_NAME, 0);
         try {
@@ -477,32 +505,32 @@ public class Cocos2dxHelper {
         }
         catch (Exception ex) {
             ex.printStackTrace();
-            
+
             return settings.getAll().get(key).toString();
         }
     }
-    
+
     public static void setBoolForKey(String key, boolean value) {
         SharedPreferences settings = sActivity.getSharedPreferences(Cocos2dxHelper.PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean(key, value);
         editor.commit();
     }
-    
+
     public static void setIntegerForKey(String key, int value) {
         SharedPreferences settings = sActivity.getSharedPreferences(Cocos2dxHelper.PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putInt(key, value);
         editor.commit();
     }
-    
+
     public static void setFloatForKey(String key, float value) {
         SharedPreferences settings = sActivity.getSharedPreferences(Cocos2dxHelper.PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putFloat(key, value);
         editor.commit();
     }
-    
+
     public static void setDoubleForKey(String key, double value) {
         // SharedPreferences doesn't support recording double value
         SharedPreferences settings = sActivity.getSharedPreferences(Cocos2dxHelper.PREFS_NAME, 0);
@@ -510,14 +538,14 @@ public class Cocos2dxHelper {
         editor.putFloat(key, (float)value);
         editor.commit();
     }
-    
+
     public static void setStringForKey(String key, String value) {
         SharedPreferences settings = sActivity.getSharedPreferences(Cocos2dxHelper.PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString(key, value);
         editor.commit();
     }
-    
+
     public static void deleteValueForKey(String key) {
         SharedPreferences settings = sActivity.getSharedPreferences(Cocos2dxHelper.PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
@@ -536,7 +564,7 @@ public class Cocos2dxHelper {
 
         return null;
     }
-    
+
     // ===========================================================
     // Inner and Anonymous Classes
     // ===========================================================
@@ -607,5 +635,5 @@ public class Cocos2dxHelper {
             return -1;
         }
     }
-    //Enhance API modification end     
+    //Enhance API modification end
 }

@@ -19,6 +19,7 @@ jni/IMEJni.cpp \
 jni/Java_org_cocos2dx_lib_Cocos2dxAccelerometer.cpp \
 jni/Java_org_cocos2dx_lib_Cocos2dxBitmap.cpp \
 jni/Java_org_cocos2dx_lib_Cocos2dxHelper.cpp \
+jni/Java_org_cocos2dx_lib_Cocos2dxMotionSensor.cpp \
 jni/Java_org_cocos2dx_lib_Cocos2dxRenderer.cpp \
 jni/JniHelper.cpp \
 jni/TouchesJni.cpp \

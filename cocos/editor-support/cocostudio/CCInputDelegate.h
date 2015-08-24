@@ -53,12 +53,14 @@ CC_CONSTRUCTOR_ACCESS:
      * @js NA
      */
     virtual ~InputDelegate(void);
-    
+
 public:
     virtual bool isTouchEnabled() const;
     virtual void setTouchEnabled(bool value);
     virtual bool isAccelerometerEnabled() const;
     virtual void setAccelerometerEnabled(bool value);
+    virtual bool isMotionSensorEnabled() const;
+    virtual void setMotionSensorEnabled(cocos2d::SensorType type, bool value);
     virtual bool isKeypadEnabled() const;
     virtual void setKeypadEnabled(bool value);
     virtual void setTouchMode(cocos2d::Touch::DispatchMode mode);
@@ -110,6 +112,10 @@ public:
     /**
      * @js NA
      */
+    virtual void onDeviceMotion(cocos2d::DeviceMotion* mot, cocos2d::Event* event) {};
+    /**
+     * @js NA
+     */
     virtual void onKeyPressed(cocos2d::EventKeyboard::KeyCode keyCode, cocos2d::Event* event) {};
     /**
      * @js NA
@@ -148,11 +154,13 @@ public:
      */
     virtual void onTouchesCancelled(const std::vector<cocos2d::Touch*>& touches, cocos2d::Event *event);
 
-protected:   
+protected:
     bool _touchEnabled;
     cocos2d::EventListener* _touchListener;
     bool _accelerometerEnabled;
     cocos2d::EventListener*  _accelerometerListener;
+    bool _motionSensorEnabled;
+    cocos2d::EventListener*  _motionSensorListener;
     bool _keypadEnabled;
     cocos2d::EventListener*  _keyboardListener;
 private:

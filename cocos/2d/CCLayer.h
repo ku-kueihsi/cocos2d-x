@@ -46,6 +46,7 @@ class TouchScriptHandlerEntry;
 class EventListenerTouch;
 class EventListenerKeyboard;
 class EventListenerAcceleration;
+class EventListenerDeviceMotion;
 
 class Touch;
 
@@ -57,11 +58,11 @@ class Touch;
 
 All features from Node are valid, plus the following new features:
 - It can receive iPhone Touches
-- It can receive Accelerometer input
+- It can receive Accelerometer, and General motion sensor input
 */
 class CC_DLL Layer : public Node
 {
-public:    
+public:
     /** Creates a fullscreen black layer.
      *
      * @return An autoreleased Layer object.
@@ -73,12 +74,12 @@ public:
     CC_DEPRECATED_ATTRIBUTE virtual void ccTouchMoved(Touch *pTouch, Event *pEvent) final {CC_UNUSED_PARAM(pTouch); CC_UNUSED_PARAM(pEvent);}
     CC_DEPRECATED_ATTRIBUTE virtual void ccTouchEnded(Touch *pTouch, Event *pEvent) final {CC_UNUSED_PARAM(pTouch); CC_UNUSED_PARAM(pEvent);}
     CC_DEPRECATED_ATTRIBUTE virtual void ccTouchCancelled(Touch *pTouch, Event *pEvent) final {CC_UNUSED_PARAM(pTouch); CC_UNUSED_PARAM(pEvent);}
-    
+
     CC_DEPRECATED_ATTRIBUTE virtual void ccTouchesBegan(__Set *pTouches, Event *pEvent) final {CC_UNUSED_PARAM(pTouches); CC_UNUSED_PARAM(pEvent);}
     CC_DEPRECATED_ATTRIBUTE virtual void ccTouchesMoved(__Set *pTouches, Event *pEvent) final {CC_UNUSED_PARAM(pTouches); CC_UNUSED_PARAM(pEvent);}
     CC_DEPRECATED_ATTRIBUTE virtual void ccTouchesEnded(__Set *pTouches, Event *pEvent) final {CC_UNUSED_PARAM(pTouches); CC_UNUSED_PARAM(pEvent);}
     CC_DEPRECATED_ATTRIBUTE virtual void ccTouchesCancelled(__Set *pTouches, Event *pEvent) final {CC_UNUSED_PARAM(pTouches); CC_UNUSED_PARAM(pEvent);}
-    
+
     /* Callback function should not be deprecated, it will generate lots of warnings.
        Since 'setTouchEnabled' was deprecated, it will make warnings if developer overrides onTouchXXX and invokes setTouchEnabled(true) instead of using EventDispatcher::addEventListenerWithXXX.
     */
@@ -140,8 +141,8 @@ public:
     * @js NA
     */
     virtual void onTouchesCancelled(const std::vector<Touch*>&touches, Event *unused_event);
-    /** 
-      @deprecated Please override onAcceleration 
+    /**
+      @deprecated Please override onAcceleration
       @js NA
      */
     CC_DEPRECATED_ATTRIBUTE virtual void didAccelerate(Acceleration* accelerationValue) final {};
@@ -155,6 +156,13 @@ public:
      * @js NA
      */
     virtual void onAcceleration(Acceleration* acc, Event* unused_event);
+
+    /** Callback funtion for device motion.
+     * @param mot DeviceMotion information.
+     * @param unused_event Event information.
+     * @js NA
+     */
+    virtual void onDeviceMotion(DeviceMotion* mot, Event* unused_event);
 
     /** If isTouchEnabled, this method is called onEnter. Override it to change the
     way Layer receives touch events.
@@ -177,12 +185,12 @@ public:
     */
     CC_DEPRECATED_ATTRIBUTE bool isTouchEnabled() const;
     CC_DEPRECATED_ATTRIBUTE void setTouchEnabled(bool value);
-    
+
     CC_DEPRECATED_ATTRIBUTE virtual void setTouchMode(Touch::DispatchMode mode);
     CC_DEPRECATED_ATTRIBUTE virtual Touch::DispatchMode getTouchMode() const;
 
-    /** 
-      swallowsTouches of the touch events. Default is true 
+    /**
+      swallowsTouches of the touch events. Default is true
       @js NA
      */
     CC_DEPRECATED_ATTRIBUTE virtual void setSwallowsTouches(bool swallowsTouches);
@@ -206,14 +214,14 @@ public:
     CC_DEPRECATED_ATTRIBUTE virtual bool isKeyboardEnabled() const;
     CC_DEPRECATED_ATTRIBUTE virtual void setKeyboardEnabled(bool value);
 
-    /** 
-      Please use onKeyPressed instead. 
+    /**
+      Please use onKeyPressed instead.
       @js NA
      */
     CC_DEPRECATED_ATTRIBUTE virtual void keyPressed(int keyCode) final {};
-    
-    /** 
-      Please use onKeyReleased instead. 
+
+    /**
+      Please use onKeyReleased instead.
       @js NA
      */
     CC_DEPRECATED_ATTRIBUTE virtual void keyReleased(int keyCode) final {};
@@ -237,8 +245,8 @@ public:
     CC_DEPRECATED_ATTRIBUTE virtual bool isKeypadEnabled() const final { return _keyboardEnabled; }
     CC_DEPRECATED_ATTRIBUTE virtual void setKeypadEnabled(bool value);
 
-    /** 
-      @deprecated Please override onKeyReleased and check the keycode of KeyboardEvent::KeyCode::Menu(KEY_BACKSPACE) instead. 
+    /**
+      @deprecated Please override onKeyReleased and check the keycode of KeyboardEvent::KeyCode::Menu(KEY_BACKSPACE) instead.
       @js NA
      */
     CC_DEPRECATED_ATTRIBUTE virtual void keyBackClicked() final {};
@@ -279,7 +287,7 @@ private:
 
 /** @class __LayerRGBA
  * @brief LayerRGBA is a subclass of Layer that implements the RGBAProtocol protocol using a solid color as the background.
- 
+
  All features from Layer are valid, plus the following new features that propagate into children that conform to the RGBAProtocol:
  - opacity
  - RGB colors
@@ -290,8 +298,8 @@ class CC_DLL __LayerRGBA : public Layer, public __RGBAProtocol
 {
 public:
     CREATE_FUNC(__LayerRGBA);
-    
-    
+
+
     //
     // Overrides
     //
@@ -354,7 +362,7 @@ public:
     static LayerColor * create(const Color4B& color);
 
     /** Change width in Points.
-     * 
+     *
      * @param w The width of layer.
      */
     void changeWidth(GLfloat w);
@@ -364,7 +372,7 @@ public:
      */
     void changeHeight(GLfloat h);
     /** Change width and height in Points.
-     * 
+     *
      * @param w The width of layer.
      * @param h The Height of layer.
     @since v0.8
@@ -392,11 +400,11 @@ public:
     virtual void setBlendFunc(const BlendFunc& blendFunc) override;
 
     virtual std::string getDescription() const override;
-    
+
 CC_CONSTRUCTOR_ACCESS:
     LayerColor();
     virtual ~LayerColor();
-    
+
     bool init() override;
     bool initWithColor(const Color4B& color, GLfloat width, GLfloat height);
     bool initWithColor(const Color4B& color);
@@ -464,7 +472,7 @@ public:
      * @return An autoreleased LayerGradient object.
      */
     static LayerGradient* create(const Color4B& start, const Color4B& end, const Vec2& v);
-    
+
     /** Whether or not the interpolation will be compressed in order to display all the colors of the gradient both in canonical and non canonical vectors.
      Default: true.
      *
@@ -478,7 +486,7 @@ public:
     bool isCompressedInterpolation() const;
 
     /** Sets the start color of the gradient.
-     * 
+     *
      * @param startColor The start color.
      */
     void setStartColor( const Color3B& startColor );
@@ -522,7 +530,7 @@ public:
     GLubyte getEndOpacity() const;
 
     /** Sets the directional vector that will be used for the gradient.
-    The default value is vertical direction (0,-1). 
+    The default value is vertical direction (0,-1).
      *
      * @param alongVector The direction of gradient.
      */
@@ -534,18 +542,18 @@ public:
     const Vec2& getVector() const;
 
     virtual std::string getDescription() const override;
-    
+
 CC_CONSTRUCTOR_ACCESS:
     LayerGradient();
     virtual ~LayerGradient();
-    
+
     virtual bool init() override;
     /** Initializes the Layer with a gradient between start and end.
      * @js init
      * @lua init
      */
     bool initWithColor(const Color4B& start, const Color4B& end);
-    
+
     /** Initializes the Layer with a gradient between start and end in the direction of v.
      * @js init
      * @lua init
@@ -575,7 +583,7 @@ class CC_DLL LayerMultiplex : public Layer
 public:
     /** Creates and initializes a LayerMultiplex object.
      * @lua NA
-     * 
+     *
      * @return An autoreleased LayerMultiplex object.
      */
     static LayerMultiplex* create();
@@ -648,7 +656,7 @@ public:
     void switchToAndReleaseMe(int n);
 
     virtual std::string getDescription() const override;
-    
+
 CC_CONSTRUCTOR_ACCESS:
     /**
      * @js ctor
@@ -659,14 +667,14 @@ CC_CONSTRUCTOR_ACCESS:
      * @lua NA
      */
     virtual ~LayerMultiplex();
-    
+
     virtual bool init() override;
     /** initializes a MultiplexLayer with one or more layers using a variable argument list.
      * @js NA
      * @lua NA
      */
     bool initWithLayers(Layer* layer, va_list params);
-    
+
     /** initializes a MultiplexLayer with an array of layers
      @since v2.1
      */
@@ -687,4 +695,3 @@ private:
 NS_CC_END
 
 #endif // __CCLAYER_H__
-
