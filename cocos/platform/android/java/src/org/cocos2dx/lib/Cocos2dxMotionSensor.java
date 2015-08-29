@@ -49,14 +49,16 @@ public class Cocos2dxMotionSensor implements SensorEventListener {
     // Must match sensor type enum in CCDevice.h
     private static final int[] SENSOR_TYPES = {
       Sensor.TYPE_ACCELEROMETER, Sensor.TYPE_GYROSCOPE,
-      Sensor.TYPE_ROTATION_VECTOR, Sensor.TYPE_MAGNETIC_FIELD};
+      Sensor.TYPE_ROTATION_VECTOR, Sensor.TYPE_MAGNETIC_FIELD,
+      Sensor.TYPE_LINEAR_ACCELERATION};
     private static final Map<Integer, Integer> SENSOR_MAP =
       Collections.unmodifiableMap(
         new HashMap<Integer, Integer>() {{
-            put(Sensor.TYPE_ACCELEROMETER, 0);
-            put(Sensor.TYPE_GYROSCOPE, 1);
-            put(Sensor.TYPE_ROTATION_VECTOR, 2);
-            put(Sensor.TYPE_MAGNETIC_FIELD, 3);
+            put(SENSOR_TYPES[0], 0);
+            put(SENSOR_TYPES[1], 1);
+            put(SENSOR_TYPES[2], 2);
+            put(SENSOR_TYPES[3], 3);
+            put(SENSOR_TYPES[4], 4);
         }});
 
     // ===========================================================

@@ -597,11 +597,12 @@ public:
 */
 enum class SensorType : int
 {
-  NONE_SENSOR       = -1,
-  ACCELEROMETER     = 0,
-  GYROSCOPE         = 1,
-  ROTATION_VECTOR   = 2,
-  MAGETOMETER       = 3,
+  NONE_SENSOR         = -1,
+  ACCELEROMETER       = 0,
+  GYROSCOPE           = 1,
+  ROTATION_VECTOR     = 2,
+  MAGETOMETER         = 3,
+  LINEAR_ACCELERATION = 4,
 };
 
 /** @struct DeviceMotion
